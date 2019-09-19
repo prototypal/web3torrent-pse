@@ -1,7 +1,7 @@
 import WebTorrentPaidStreamingClient, { ClientEvents } from '../../src/web3torrent-lib';
 import { defaultFile, defaultLeechingOptions, defaultSeedingOptions } from '../utils';
 
-describe('Seeding and Leeching', () => {
+describe('Seeding and Leeching - 65sec', () => {
   let seeder: WebTorrentPaidStreamingClient;
   let leecher: WebTorrentPaidStreamingClient;
 
@@ -15,7 +15,7 @@ describe('Seeding and Leeching', () => {
     leecher.on('warning', (err: any) => fail(err));
   });
 
-  it('should be able to unchoke and finish a download', done => {
+  it('should be able to unchoke and finish a download after 65 seconds', done => {
     seeder.seed(defaultFile as File, defaultSeedingOptions(), seededTorrent => {
       seeder.once(ClientEvents.PEER_STATUS_CHANGED, ({ peerAccount }) => {
         setTimeout(() => seeder.togglePeer(seededTorrent.infoHash, peerAccount), 65000);
