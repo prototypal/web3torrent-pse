@@ -156,9 +156,6 @@ export default class WebTorrentPaidStreamingClient extends WebTorrent {
     torrent.on(TorrentEvents.WIRE, (wire: PaidStreamingWire) => {
       this.setupWire(torrent, wire);
     });
-    torrent.on('error', error => {
-      log('ERROR', error);
-    });
 
     torrent.on(TorrentEvents.NOTICE, (wire, { command, data }) => {
       log(`< ${command} received from ${wire.peerExtendedHandshake.pseAccount}`, data);
