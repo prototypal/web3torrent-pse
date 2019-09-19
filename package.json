@@ -17,7 +17,7 @@
       "jest-junit"
     ],
     "testMatch": [
-      "<rootDir>/tests/?(*.)+(test).ts"
+      "<rootDir>/tests/**/?(*.)+(test).ts"
     ],
     "globalSetup": "./tests/setup.js",
     "globalTeardown": "./tests/teardown.js",
