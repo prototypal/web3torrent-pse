@@ -53,6 +53,9 @@ const progressLogger = (logger, status, setStatus, setMagnet, seedMagnet) => (
 };
 
 function App() {
+  if (process.env.REACT_APP_DEBUG) {
+    localStorage.debug = 'web3torrent:*';
+  }
   let loggerId;
   const [status, setStatus] = useState(InitialState);
   const [seedMagnet, setSeedMagnet] = useState('');

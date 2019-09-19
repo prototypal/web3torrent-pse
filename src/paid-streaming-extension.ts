@@ -7,6 +7,8 @@ import {
   PaidStreamingExtensionNotices,
   PaidStreamingWire
 } from './types';
+import debug from 'debug';
+const log = debug('web3torrent:extension');
 
 export abstract class PaidStreamingExtension implements Extension {
   protected wire: PaidStreamingWire;
@@ -20,7 +22,6 @@ export abstract class PaidStreamingExtension implements Extension {
   peerAccount?: string;
 
   isForceChoking = false;
-  blockedRequests: number[] = [];
 
   constructor(wireToUse: PaidStreamingWire) {
     this.wire = wireToUse;
@@ -46,13 +47,14 @@ export abstract class PaidStreamingExtension implements Extension {
   }
 
   // tslint:disable-next-line: no-empty
-  onHandshake(/* infoHash, peerId, extensions */) {}
+  onHandshake(/* infoHash, peerId, extensions */) { }
 
   onExtendedHandshake(handshake: ExtendedHandshake) {
     if (!handshake.m || !handshake.m[this.name]) {
+      log('WARNING: Peer does not support Web3Torrent')
       return this.messageBus.emit(
         PaidStreamingExtensionEvents.WARNING,
-        new Error('!>Peer does not support paidStreamingExtension')
+        new Error('!>Peer does not support Web3Torrent')
       );
     }
 
@@ -76,9 +78,7 @@ export abstract class PaidStreamingExtension implements Extension {
   start() {
     this.isForceChoking = false;
     this.wire.unchoke();
-    this.executeExtensionCommand(PaidStreamingExtensionNotices.START, {
-      pendingRequests: this.blockedRequests
-    });
+    this.executeExtensionCommand(PaidStreamingExtensionNotices.START);
   }
 
   ack() {
@@ -90,7 +90,7 @@ export abstract class PaidStreamingExtension implements Extension {
       const jsonData = bencode.decode(buffer, undefined, undefined, 'utf8');
       this.messageBus.emit(PaidStreamingExtensionEvents.NOTICE, jsonData);
     } catch (err) {
-      console.error('!> ERROR on decoding', err);
+      log('ERROR: decoding', err);
       return;
     }
   }
@@ -108,7 +108,7 @@ export abstract class PaidStreamingExtension implements Extension {
 
     // tslint:disable-next-line: only-arrow-functions no-string-literal
     this.wire._onRequest = function(index: number, offset: number, length: number) {
-      console.log(`!> Incoming request for piece ${arguments[0]}`);
+      log(`!> Incoming request for piece - index ${arguments[0]}`);
 
       messageBus.emit(
         PaidStreamingExtensionEvents.REQUEST,
@@ -116,16 +116,12 @@ export abstract class PaidStreamingExtension implements Extension {
       );
 
       // Call onRequest after the handlers triggered by this event have been called
-      const undecoratedOnRequestFunctionArgs: IArguments = arguments;
 
       setTimeout(() => {
-        // TODO: Do we need blockedRequests?
         if (!extension.isForceChoking) {
-          extension.blockedRequests = [];
           undecoratedOnRequestFunction.apply(wire, [index, offset, length]);
         } else {
-          extension.blockedRequests.push(undecoratedOnRequestFunctionArgs[0]);
-          console.warn('!> CHOKING - dropped request', extension.blockedRequests);
+          log('!> dropped request - index: ' + index);
         }
       }, 0);
     };
