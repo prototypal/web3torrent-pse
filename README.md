@@ -1,3 +1,6 @@
+> We've moved to the @statechannels organization, find us here:
+> https://github.com/statechannels/monorepo/tree/master/packages/web3torrent
+
 ## Web3Torrent
 Web3Torrent is a streaming torrent implementation, based of [Webtorrent](https://github.com/webtorrent/webtorrent) and including a custom BitTorrent protocol extension, that allows seeders to block/choke and unblock other peers by user request.
 
